@@ -1,3 +1,3 @@
-module github.com/checker-util/checker-util
+module github.com/checker-utility/checker-util
 
 go 1.17
