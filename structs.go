@@ -2,6 +2,7 @@ package checkerutil
 
 import (
 	"os"
+	"sync"
 	"time"
 )
 
@@ -12,5 +13,8 @@ type Output struct {
 	ID       string
 	File     *os.File
 	Input    chan string
-	InputNum int
+	InputNum struct {
+		Num   int
+		Mutex sync.Mutex
+	}
 }

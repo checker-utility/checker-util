@@ -91,12 +91,16 @@ func (c *Checker) AddOutput(ID, FileName string, Delay time.Duration) error {
 // Input will actually write to files and use the *Output struct
 // If you input an invalid ID, it will add that ID to the outputs list automatically, the default delay will be 1 second and the rules from AddOutput do apply.
 func (c *Checker) Input(ID, Input string) {
-	if _, ok := c.Outputs[ID]; !ok {
+	if a, ok := c.Outputs[ID]; !ok {
 		c.AddOutput(ID, "", 1*time.Second)
+	} else {
+		if !strings.HasSuffix(Input, "\n") {
+			Input += "\n"
+		}
+		a.Input <- Input
+		a.InputNum.Mutex.Lock()
+		a.InputNum.Num++
+		a.InputNum.Mutex.Unlock()
 	}
-	if !strings.HasSuffix(Input, "\n") {
-		Input += "\n"
-	}
-	o := c.Outputs[ID]
-	o.Input <- Input
+
 }

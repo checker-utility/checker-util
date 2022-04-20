@@ -56,8 +56,18 @@ func (c *Checker) formatConsole() string {
 	for i, ID := range IDs {
 		ID = strings.Split(ID, ":")[1]
 		ID = ID[:len(ID)-1]
+		total := 0
 		if a, ok := c.Outputs[ID]; ok {
-			end = strings.ReplaceAll(end, IDs[i], fmt.Sprint(a.InputNum))
+			end = strings.ReplaceAll(end, IDs[i], fmt.Sprint(a.InputNum.Num))
+			continue
+		}
+		if ID == "" {
+			for _, a := range c.Outputs {
+				a.InputNum.Mutex.Lock()
+				total += a.InputNum.Num
+				a.InputNum.Mutex.Unlock()
+			}
+			end = strings.ReplaceAll(end, IDs[i], fmt.Sprint(total))
 			continue
 		}
 		end = strings.ReplaceAll(end, IDs[i], "N/A")
