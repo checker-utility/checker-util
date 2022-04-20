@@ -50,6 +50,7 @@ func LoadCombosFromDir(Dir, Deliminator string) (*Combo, error) {
 }
 
 // GetCombo returns a single entry into the *Combo.ComboChan channel
+// If the combo channel is empty, it will return an empty string
 func (c *Combo) GetCombo() string {
 	if len(c.ComboChan) == 0 {
 		return ""
