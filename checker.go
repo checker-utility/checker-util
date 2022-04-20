@@ -3,21 +3,29 @@ package checkerutil
 import (
 	"os"
 	"strings"
+	"sync"
 	"time"
 )
 
 // Checker holds a map of all the different possible writes as well as all the configuration for the checker utility and the CPM calculations
 type Checker struct {
-	Outputs map[string]*Output
+	Outputs *outputsStruct
 	CPM     *CPMStruct
 	Console *ConsoleTitle
 	Dir     string
 }
 
+type outputsStruct struct {
+	OutputsMutex sync.Mutex
+	Outputs      map[string]*Output
+}
+
 // MakeChecker takes in nothing, it returns a (mostly empty) *Checker, you should use the methods attached to configure the checker.
 func MakeChecker() *Checker {
 	return &Checker{
-		Outputs: make(map[string]*Output),
+		Outputs: &outputsStruct{
+			Outputs: make(map[string]*Output),
+		},
 		CPM: &CPMStruct{
 			CPMIn: make(chan int),
 		},
@@ -38,7 +46,8 @@ func (c *Checker) ConfigureConsoleTitle(Activated bool, Delay time.Duration, For
 		Format:    Format,
 	}
 	if Activated {
-		c.handleCPM()
+		go c.handleCPM()
+		go c.setConsoleTitle()
 	}
 }
 
@@ -60,7 +69,8 @@ func (c *Checker) AddOutput(ID, FileName string, Delay time.Duration) error {
 		// If this happens, it basically makes the entire utility not work. The only logical way this could happen is if the program doesn't have permissions or some other obscure thing.
 		panic(err)
 	}
-	c.Outputs[ID] = &Output{
+	c.Outputs.OutputsMutex.Lock()
+	c.Outputs.Outputs[ID] = &Output{
 		FileName: FileName,
 		ID:       ID,
 		Delay:    Delay,
@@ -68,7 +78,8 @@ func (c *Checker) AddOutput(ID, FileName string, Delay time.Duration) error {
 		Input:    make(chan string),
 	}
 	go func(ID string) {
-		o := c.Outputs[ID]
+		o := c.Outputs.Outputs[ID]
+		c.Outputs.OutputsMutex.Unlock()
 		toWrite := ""
 		go func(o *Output) {
 			for i := range o.Input {
@@ -91,16 +102,17 @@ func (c *Checker) AddOutput(ID, FileName string, Delay time.Duration) error {
 // Input will actually write to files and use the *Output struct
 // If you input an invalid ID, it will add that ID to the outputs list automatically, the default delay will be 1 second and the rules from AddOutput do apply.
 func (c *Checker) Input(ID, Input string) {
-	if a, ok := c.Outputs[ID]; !ok {
+	if _, ok := c.Outputs.Outputs[ID]; !ok {
 		c.AddOutput(ID, "", 1*time.Second)
-	} else {
-		if !strings.HasSuffix(Input, "\n") {
-			Input += "\n"
-		}
-		a.Input <- Input
-		a.InputNum.Mutex.Lock()
-		a.InputNum.Num++
-		a.InputNum.Mutex.Unlock()
 	}
+	if !strings.HasSuffix(Input, "\n") {
+		Input += "\n"
+	}
+	a := c.Outputs.Outputs[ID]
+	a.Input <- Input
+	a.InputNum.Mutex.Lock()
+	a.InputNum.Num++
+	c.CPM.CPMIn <- 1
+	a.InputNum.Mutex.Unlock()
 
 }

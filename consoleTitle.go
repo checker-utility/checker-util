@@ -57,12 +57,13 @@ func (c *Checker) formatConsole() string {
 		ID = strings.Split(ID, ":")[1]
 		ID = ID[:len(ID)-1]
 		total := 0
-		if a, ok := c.Outputs[ID]; ok {
+
+		if a, ok := c.Outputs.Outputs[ID]; ok {
 			end = strings.ReplaceAll(end, IDs[i], fmt.Sprint(a.InputNum.Num))
 			continue
 		}
 		if ID == "" {
-			for _, a := range c.Outputs {
+			for _, a := range c.Outputs.Outputs {
 				a.InputNum.Mutex.Lock()
 				total += a.InputNum.Num
 				a.InputNum.Mutex.Unlock()

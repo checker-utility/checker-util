@@ -12,15 +12,17 @@ type Combo struct {
 
 // LoadCombo returns a *Combo of which contains *Combo.ComboChan, you use *Combo.GetCombo() to interact with this channel
 func LoadCombo(FileName, Deliminator string) (*Combo, error) {
-	c := &Combo{ComboChan: make(chan string)}
 	f, err := os.ReadFile(FileName)
 	if err != nil {
 		return nil, err
 	}
 	a := strings.Split(string(f), Deliminator)
-	for _, p := range a {
-		c.ComboChan <- p
-	}
+	c := &Combo{ComboChan: make(chan string, len(a))}
+	go func(a []string) {
+		for _, p := range a {
+			c.ComboChan <- p
+		}
+	}(a)
 	return c, nil
 }
 
