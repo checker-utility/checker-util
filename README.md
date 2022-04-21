@@ -24,12 +24,20 @@ checker.AddOutput("bad", "bad.txt" /*will still persist the Dir*/, 1 * time.Seco
 You can also use the combo loader like this:
 ```go
 // Initilize the loader via either of these two functions
-combo := checkerutil.LoadCombo("combo.txt", "\n")
+combo, err := checkerutil.LoadCombo("combo.txt", "\n")
 //or
-combo := checkerutil.LoadCombosFromDir("./combos/", "\n")
+combo, err := checkerutil.LoadCombosFromDir("./combos/", "\n")
 
 // You can then recieve accounts using the *Combo.ComboChan like this
 acc := combo.GetCombo()
+```
+
+You can also use the proxy loader like this:
+```go
+proxies, err := checkerutil.LoadProxies("proxy.txt", "\n", "https://")
+
+// you can then get one proxy at a time like this
+proxy := proxies.GetProxy()
 ```
 
 # Suggestions
