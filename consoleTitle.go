@@ -74,5 +74,6 @@ func (c *Checker) formatConsole() string {
 		end = strings.ReplaceAll(end, IDs[i], "N/A")
 	}
 	end = strings.ReplaceAll(end, "{CPM}", fmt.Sprint(c.CalculateCPM()))
+	end = strings.ReplaceAll(end, "{COMBOS}", fmt.Sprint(len(c.Combo.ComboChan)))
 	return end
 }

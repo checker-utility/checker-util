@@ -12,6 +12,7 @@ type Checker struct {
 	Outputs *outputsStruct
 	CPM     *CPMStruct
 	Console *ConsoleTitle
+	Combo   *Combo
 	Dir     string
 }
 
