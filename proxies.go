@@ -34,6 +34,9 @@ func (p *Proxy) GetProxy() string {
 		return ""
 	}
 	proxy := <-p.ProxyChan
+	if proxy == "" {
+		return proxy
+	}
 	p.ProxyChan <- proxy
 	if !strings.HasPrefix(proxy, p.Type) {
 		proxy = p.Type + proxy

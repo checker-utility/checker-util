@@ -46,6 +46,7 @@ func (c *Checker) handleCPM() {
 				cp = append(cp, c.CPM.CPMArray[i])
 			}
 			cp = append(cp, c.CPM.CPS.CPS)
+			c.CPM.CPMArray = cp
 			c.CPM.CPS.CPSMutex.Unlock()
 			c.CPM.CPMMutex.Unlock()
 		}
